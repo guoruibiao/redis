@@ -42,6 +42,7 @@ void hashTypeTryConversion(robj *o, robj **argv, int start, int end) {
 
     if (o->encoding != OBJ_ENCODING_ZIPLIST) return;
 
+    // 对原始的ziplist进行操作，如果新的field和value单个值大于了预定义的hash_max_ziplist_value（这个值可以在redis.conf文件中进行动态的修改）就切换到hashtable格式
     for (i = start; i <= end; i++) {
         if (sdsEncodedObject(argv[i]) &&
             sdslen(argv[i]->ptr) > server.hash_max_ziplist_value)
@@ -234,6 +235,7 @@ int hashTypeSet(robj *o, sds field, sds value, int flags) {
         o->ptr = zl;
 
         /* Check if the ziplist needs to be converted to a hash table */
+        // hash_max_ziplist_entries 可以在redis.conf中进行动态设置，默认值是512个
         if (hashTypeLength(o) > server.hash_max_ziplist_entries)
             hashTypeConvert(o, OBJ_ENCODING_HT);
     } else if (o->encoding == OBJ_ENCODING_HT) {
@@ -271,6 +273,7 @@ int hashTypeSet(robj *o, sds field, sds value, int flags) {
      * want this function to be responsible. */
     if (flags & HASH_SET_TAKE_FIELD && field) sdsfree(field);
     if (flags & HASH_SET_TAKE_VALUE && value) sdsfree(value);
+    // insert时update为0， 而更新一个已有的field时update返回值为1
     return update;
 }
 
@@ -540,10 +543,12 @@ void hsetCommand(client *c) {
     hashTypeTryConversion(o,c->argv,2,c->argc-1);
 
     for (i = 2; i < c->argc; i += 2)
+        // !hashTypeSet 本身hashTypeSet对于新增field返回的是0， 更新field返回的是1，这前面加了个! 我说咋和我测试的不太一样呢，差点就看漏了
         created += !hashTypeSet(o,c->argv[i]->ptr,c->argv[i+1]->ptr,HASH_SET_COPY);
 
     /* HMSET (deprecated) and HSET return value is different. */
     char *cmdname = c->argv[0]->ptr;
+    // HSET返回的是是否影响了hash元素的field的个数，数值类型；而HMSET返回的则是一个字符串，值为"OK"
     if (cmdname[1] == 's' || cmdname[1] == 'S') {
         /* HSET */
         addReplyLongLong(c, created);

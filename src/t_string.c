@@ -33,7 +33,7 @@
 /*-----------------------------------------------------------------------------
  * String Commands
  *----------------------------------------------------------------------------*/
-
+// 一个string类型的key，其最大存储量为512M（一个写死的值）
 static int checkStringLength(client *c, long long size) {
     if (size > 512*1024*1024) {
         addReplyError(c,"string exceeds maximum allowed size (512MB)");
