@@ -152,6 +152,8 @@ robj *lookupKeyRead(redisDb *db, robj *key) {
  * Returns the linked value object if the key exists or NULL if the key
  * does not exist in the specified DB. */
 robj *lookupKeyWriteWithFlags(redisDb *db, robj *key, int flags) {
+    // 惰性删除策略 如果有需要，将key从过期池中摘出去
+    // 由于redis.conf中可以设置lazyfree_lazy_free来选择是否进行惰性删除。如果同步的话，其实下面的lookupKey或许可以不用执行。
     expireIfNeeded(db,key);
     return lookupKey(db,key,flags);
 }
