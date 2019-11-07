@@ -748,6 +748,7 @@ void hlenCommand(client *c) {
 void hstrlenCommand(client *c) {
     robj *o;
 
+    // version >= 3.2.0 才可用
     if ((o = lookupKeyReadOrReply(c,c->argv[1],shared.czero)) == NULL ||
         checkType(c,o,OBJ_HASH)) return;
     addReplyLongLong(c,hashTypeGetValueLength(o,c->argv[2]->ptr));
