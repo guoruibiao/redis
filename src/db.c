@@ -220,12 +220,14 @@ void dbOverwrite(redisDb *db, robj *key, robj *val) {
  *
  * All the new keys in the database should be created via this interface. */
 void setKey(redisDb *db, robj *key, robj *val) {
+    // key如果存在就覆盖，否则进行新建
     if (lookupKeyWrite(db,key) == NULL) {
         dbAdd(db,key,val);
     } else {
         dbOverwrite(db,key,val);
     }
     incrRefCount(val);
+    // set 命令会 去掉原有key（如果存在的话）的ttl 考点！除此之外还有持久化一个key的时候也会清除掉ttl
     removeExpire(db,key);
     signalModifiedKey(db,key);
 }
@@ -1128,7 +1130,7 @@ void swapdbCommand(client *c) {
 /*-----------------------------------------------------------------------------
  * Expires API
  *----------------------------------------------------------------------------*/
-
+// 就是去掉db中expires池中的这个key
 int removeExpire(redisDb *db, robj *key) {
     /* An expire may only be removed if there is a corresponding entry in the
      * main dict. Otherwise, the key will never be freed. */

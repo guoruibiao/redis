@@ -98,7 +98,7 @@ void setCommand(client *c) {
     robj *expire = NULL;
     int unit = UNIT_SECONDS;
     int flags = OBJ_SET_NO_FLAGS;
-
+    // c->argc `命令行参数个数`, c->argc `具体的命令行参数`
     for (j = 3; j < c->argc; j++) {
         char *a = c->argv[j]->ptr;
         robj *next = (j == c->argc-1) ? NULL : c->argv[j+1];
@@ -134,7 +134,7 @@ void setCommand(client *c) {
             return;
         }
     }
-
+    // 为了节省空间，先把key做成Redis中的字符串对象
     c->argv[2] = tryObjectEncoding(c->argv[2]);
     setGenericCommand(c,flags,c->argv[1],c->argv[2],expire,unit,NULL,NULL);
 }
