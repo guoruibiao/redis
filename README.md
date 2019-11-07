@@ -1,3 +1,5 @@
+Influenced by my friend [Mr.K](https://github.com/dalaizhao), i'd like to create a new branch `comments` for redis learning.
+
 This README is just a fast *quick start* document. You can find more detailed documentation at [redis.io](https://redis.io).
 
 What is Redis?
