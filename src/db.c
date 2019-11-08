@@ -251,6 +251,7 @@ robj *dbRandomKey(redisDb *db) {
         sds key;
         robj *keyobj;
 
+        // 至多尝试100次 idx = rand() % count; 拿到db[idx] 即可
         de = dictGetFairRandomKey(db->dict);
         if (de == NULL) return NULL;
 
