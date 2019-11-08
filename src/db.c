@@ -570,10 +570,12 @@ void selectCommand(client *c) {
         "invalid DB index") != C_OK)
         return;
 
+    // cluster 模式下不允许client选择db，可以理解为cluster本身是一个完整的db下标
     if (server.cluster_enabled && id != 0) {
         addReplyError(c,"SELECT is not allowed in cluster mode");
         return;
     }
+    // selectdb 只是针对client当前指向的db下标
     if (selectDb(c,id) == C_ERR) {
         addReplyError(c,"DB index is out of range");
     } else {

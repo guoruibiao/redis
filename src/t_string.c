@@ -342,6 +342,7 @@ void incrDecrCommand(client *c, long long incr) {
 
     o = lookupKeyWrite(c->db,c->argv[1]);
     // OBJ_STRING类型的竟然不行，看来刚开始理解错咧。即便看到client拿到的是string类型，其实也是被encoding为int和raw类型的了
+    // 具体查看某个key的值是什么encoding，可以用 `DEBUG OBJECT keyname` 来查看
     if (o != NULL && checkType(c,o,OBJ_STRING)) return;
     // 看看value本身是否会越界
     if (getLongLongFromObjectOrReply(c,o,&value,NULL) != C_OK) return;
