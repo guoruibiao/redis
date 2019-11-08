@@ -556,6 +556,8 @@ void existsCommand(client *c) {
     int j;
 
     for (j = 1; j < c->argc; j++) {
+        // 对exists命令，会修改key的touch-time；这一点需要注意只有对 lookupKeyReadWithFlags(redisDb *db, robj *key, int flags)
+        // 的第三个参数flag传 LOOKUP_NOTOUCH 才不会修改touch-time
         if (lookupKeyRead(c->db,c->argv[j])) count++;
     }
     addReplyLongLong(c,count);
