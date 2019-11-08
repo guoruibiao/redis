@@ -526,6 +526,8 @@ void delGenericCommand(client *c, int lazy) {
 
     for (j = 1; j < c->argc; j++) {
         expireIfNeeded(c->db,c->argv[j]);
+        // unlink首先会判断是否进行异步删除策略，异步删除里面还会根据key被实际关联的个数，少的话会进行同步删除的处理，因此有deleted的返回值供下文判断
+        // So under a certain limit we just free the object synchronously. 这个值具体是多少，源码也没咋体现
         int deleted  = lazy ? dbAsyncDelete(c->db,c->argv[j]) :
                               dbSyncDelete(c->db,c->argv[j]);
         if (deleted) {
