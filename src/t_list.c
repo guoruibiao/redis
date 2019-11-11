@@ -289,12 +289,14 @@ void linsertCommand(client *c) {
         return;
     }
 
+    // linsert操作需要存在这个key
     if ((subject = lookupKeyWriteOrReply(c,c->argv[1],shared.czero)) == NULL ||
         checkType(c,subject,OBJ_LIST)) return;
 
     /* Seek pivot from head to tail */
     iter = listTypeInitIterator(subject,0,LIST_TAIL);
     while (listTypeNext(iter,&entry)) {
+        // 在对迭代器迭代的时候就已经可以顺便进行插入操作了，而且insert是单次操作，因此可以直接break。
         if (listTypeEqual(&entry,c->argv[3])) {
             listTypeInsert(&entry,c->argv[4],where);
             inserted = 1;
