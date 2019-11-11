@@ -39,10 +39,13 @@
  * There is no need for the caller to increment the refcount of 'value' as
  * the function takes care of it if needed. */
 void listTypePush(robj *subject, robj *value, int where) {
+    // 截止到5.0版本，list的底层实现数据类型为OBJ_ENCODING_QUICKLIST 神奇哦
     if (subject->encoding == OBJ_ENCODING_QUICKLIST) {
         int pos = (where == LIST_HEAD) ? QUICKLIST_HEAD : QUICKLIST_TAIL;
         value = getDecodedObject(value);
         size_t len = sdslen(value->ptr);
+
+        // 底层的涉及到quicklist的实现，我没咋看懂。但感觉大致意思就是计算原始大小以及添加完之后的大小，进行内存拷贝之类的处理
         quicklistPush(subject->ptr, value->ptr, len, pos);
         decrRefCount(value);
     } else {
@@ -198,6 +201,15 @@ void pushGenericCommand(client *c, int where) {
     int j, pushed = 0;
     robj *lobj = lookupKeyWrite(c->db,c->argv[1]);
 
+    /**
+     *  刚还在想，为什么没判断lobj是否为NULL的case，为什么不是
+     *  if (lobj == NULL) {
+     *      // ...
+     *  }else if() {
+     *     // ...
+     *  }
+     *  这样写可能逻辑上一下子更清晰了，但是也把代码整个往后推了一个tab位，阅读起来没那么清爽了。
+     */
     if (lobj && lobj->type != OBJ_LIST) {
         addReply(c,shared.wrongtypeerr);
         return;
