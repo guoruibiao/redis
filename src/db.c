@@ -975,6 +975,7 @@ void renameGenericCommand(client *c, int nx) {
          * with the same name. */
         dbDelete(c->db,c->argv[2]);
     }
+    // renameCommand 会删掉旧的key并把旧key的ttl转接到新的key上，完成后触发key空间的变化消息事件
     dbAdd(c->db,c->argv[2],o);
     if (expire != -1) setExpire(c,c->db,c->argv[2],expire);
     dbDelete(c->db,c->argv[1]);
