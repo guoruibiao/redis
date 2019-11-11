@@ -487,6 +487,7 @@ void ltrimCommand(client *c) {
 
     /* Remove list elements to perform the trim */
     if (o->encoding == OBJ_ENCODING_QUICKLIST) {
+        // 第三个参数是count，要删除的元素的个数
         quicklistDelRange(o->ptr,0,ltrim);
         quicklistDelRange(o->ptr,-rtrim,rtrim);
     } else {
