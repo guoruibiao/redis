@@ -437,12 +437,14 @@ void lrangeCommand(client *c) {
     /* Return the result in form of a multi-bulk reply */
     addReplyArrayLen(c,rangelen);
     if (o->encoding == OBJ_ENCODING_QUICKLIST) {
+        // start开始的迭代器
         listTypeIterator *iter = listTypeInitIterator(o, start, LIST_TAIL);
 
         while(rangelen--) {
             listTypeEntry entry;
             listTypeNext(iter, &entry);
             quicklistEntry *qe = &entry.entry;
+            // 类似于keys pattern的模式，也是直接将数据刷到client的缓冲区里面的
             if (qe->value) {
                 addReplyBulkCBuffer(c,qe->value,qe->sz);
             } else {
