@@ -613,6 +613,7 @@ void keysCommand(client *c) {
         if (allkeys || stringmatchlen(pattern,plen,key,sdslen(key),0)) {
             keyobj = createStringObject(key,sdslen(key));
             if (!keyIsExpired(c->db,keyobj)) {
+                // keys pattern 是实时刷到缓冲区中的，而不是服务器端记录到所有的key后统一返回
                 addReplyBulk(c,keyobj);
                 numkeys++;
             }
@@ -876,6 +877,7 @@ cleanup:
 /* The SCAN command completely relies on scanGenericCommand. */
 void scanCommand(client *c) {
     unsigned long cursor;
+    // 把cursor变成一个无符号的long类型
     if (parseScanCursorOrReply(c,c->argv[1],&cursor) == C_ERR) return;
     scanGenericCommand(c,NULL,cursor);
 }
@@ -1001,6 +1003,7 @@ void moveCommand(client *c) {
     long long dbid, expire;
 
     if (server.cluster_enabled) {
+        // moveCommand不允许在cluster模式下执行
         addReplyError(c,"MOVE is not allowed in cluster mode");
         return;
     }
@@ -1013,6 +1016,7 @@ void moveCommand(client *c) {
         dbid < INT_MIN || dbid > INT_MAX ||
         selectDb(c,dbid) == C_ERR)
     {
+        // 其实不全是 out of range error.
         addReply(c,shared.outofrangeerr);
         return;
     }
@@ -1036,6 +1040,7 @@ void moveCommand(client *c) {
 
     /* Return zero if the key already exists in the target DB */
     if (lookupKeyWrite(dst,c->argv[1]) != NULL) {
+        // 所以如果target db中存在同名的key，但是ttl不一样，move命令是没法成功的
         addReply(c,shared.czero);
         return;
     }
