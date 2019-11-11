@@ -266,6 +266,7 @@ void saddCommand(client *c) {
     int j, added = 0;
 
     set = lookupKeyWrite(c->db,c->argv[1]);
+    // set类型的添加，没有此key则进行创建 要么iniset，要么regular hash table
     if (set == NULL) {
         set = setTypeCreate(c->argv[2]->ptr);
         dbAdd(c->db,c->argv[1],set);
@@ -277,6 +278,7 @@ void saddCommand(client *c) {
     }
 
     for (j = 2; j < c->argc; j++) {
+        // 添加过程中可能会涉及到OBJ_ENCODING_INISET到OBJ_ENCODING_HT的转换
         if (setTypeAdd(set,c->argv[j]->ptr)) added++;
     }
     if (added) {
