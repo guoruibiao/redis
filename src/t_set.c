@@ -207,10 +207,12 @@ sds setTypeNextObject(setTypeIterator *si) {
  * used field with values which are easy to trap if misused. */
 int setTypeRandomElement(robj *setobj, sds *sdsele, int64_t *llele) {
     if (setobj->encoding == OBJ_ENCODING_HT) {
+        // 尽可能公平的获取一堆元素，然后对count 取了个%运算
         dictEntry *de = dictGetFairRandomKey(setobj->ptr);
         *sdsele = dictGetKey(de);
         *llele = -123456789; /* Not needed. Defensive. */
     } else if (setobj->encoding == OBJ_ENCODING_INTSET) {
+        // 就是rand() % length 完事了
         *llele = intsetRandom(setobj->ptr);
         *sdsele = NULL; /* Not needed. Defensive. */
     } else {
@@ -559,6 +561,7 @@ void spopCommand(client *c) {
     int64_t llele;
     int encoding;
 
+    // 提出批评： redis5.0.6版本的帮助文档该更新了，help spop没有第三个count参数的提示，实际上该命令已经支持了第三个参数咧。
     if (c->argc == 3) {
         spopWithCountCommand(c);
         return;
@@ -593,6 +596,7 @@ void spopCommand(client *c) {
 
     /* Add the element to the reply */
     addReplyBulk(c,ele);
+    // set 集合里面的元素，其实也会先被Redis用一个Redis Object进行包裹，所以pop掉此element的时候，本身的引用也应该呗去掉
     decrRefCount(ele);
 
     /* Delete the set if it's empty */
