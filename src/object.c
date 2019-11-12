@@ -393,7 +393,7 @@ robj *resetRefCount(robj *obj) {
     return obj;
 }
 
-// 检查给定的key和type是否一致，一致返回1，否则返回0
+// 检查给定的key和type是否一致，不一致返回1，否则返回0
 int checkType(client *c, robj *o, int type) {
     if (o->type != type) {
         addReply(c,shared.wrongtypeerr);
