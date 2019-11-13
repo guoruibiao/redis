@@ -4536,6 +4536,7 @@ void monitorCommand(client *c) {
     if (c->flags & CLIENT_SLAVE) return;
 
     c->flags |= (CLIENT_SLAVE|CLIENT_MONITOR);
+    // server.monitors是一个双向链表数据结构
     listAddNodeTail(server.monitors,c);
     addReply(c,shared.ok);
 }
