@@ -451,6 +451,7 @@ NULL
         strenc = strEncoding(val->encoding);
 
         char extra[138] = {0};
+        // debug object key, a awesome internal command.
         if (val->encoding == OBJ_ENCODING_QUICKLIST) {
             char *nextra = extra;
             int remaining = sizeof(extra);
