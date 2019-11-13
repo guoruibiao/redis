@@ -530,6 +530,7 @@ void lremCommand(client *c) {
             listTypeDelete(li, &entry);
             server.dirty++;
             removed++;
+            // toremove 即命令中的count， removed为当前命令已经删除的value的个数
             if (toremove && removed == toremove) break;
         }
     }
@@ -541,6 +542,7 @@ void lremCommand(client *c) {
     }
 
     if (listTypeLength(subject) == 0) {
+        // lrem删除会在元素个数为0的时候触发整个key的删除
         dbDelete(c->db,c->argv[1]);
         notifyKeyspaceEvent(NOTIFY_GENERIC,"del",c->argv[1],c->db->id);
     }
