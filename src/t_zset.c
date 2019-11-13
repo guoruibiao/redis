@@ -2418,24 +2418,27 @@ void zrangeGenericCommand(client *c, int reverse) {
     long llen;
     long rangelen;
 
+    // 进行类型判断，且把start和end的参数值顺带扔到c->argv[] 参数中
     if ((getLongFromObjectOrReply(c, c->argv[2], &start, NULL) != C_OK) ||
         (getLongFromObjectOrReply(c, c->argv[3], &end, NULL) != C_OK)) return;
 
     if (c->argc == 5 && !strcasecmp(c->argv[4]->ptr,"withscores")) {
         withscores = 1;
     } else if (c->argc >= 5) {
+        // 感觉这一步做的还蛮凑巧的，顺序性的对各个参数做处理，虽然可以提前做减少不必要的判断，但那样代码的可毒性会下降。
         addReply(c,shared.syntaxerr);
         return;
     }
 
+    // 校验key的类型，不是OBJ_ZSET 直接退出即可
     if ((zobj = lookupKeyReadOrReply(c,key,shared.emptyarray)) == NULL
          || checkType(c,zobj,OBJ_ZSET)) return;
 
-    /* Sanitize indexes. */
+    /* Sanitize（去除） indexes. */
     llen = zsetLength(zobj);
     if (start < 0) start = llen+start;
-    if (end < 0) end = llen+end;
-    if (start < 0) start = 0;
+    if (end < 0) end = llen+end; // end == -1时，刚好 length + end 为最后一个下标的值，这个技巧后面可以借鉴借鉴
+    if (start < 0) start = 0; // 保险策略，有的人可能会一下子设置start为一个很大的负数，这样即便是加了LENGTH的start，也还是负数，这样不便于代码的计算。
 
     /* Invariant: start >= 0, so this test will be true when end < 0.
      * The range is empty when start > end or start >= length. */
@@ -2462,6 +2465,9 @@ void zrangeGenericCommand(client *c, int reverse) {
         long long vlong;
 
         if (reverse)
+            /* 不是很理解，这个传过来的第二个参数是干什么用的,直到点进去看了下注释，就按照负数从右往左遍历，正数从左往右遍历吧。
+             * When the given* index is negative, the list is traversed back to front.
+             */
             eptr = ziplistIndex(zl,-2-(2*start));
         else
             eptr = ziplistIndex(zl,2*start);
@@ -2480,6 +2486,7 @@ void zrangeGenericCommand(client *c, int reverse) {
                 addReplyBulkCBuffer(c,vstr,vlen);
             if (withscores) addReplyDouble(c,zzlGetScore(sptr));
 
+            // 更新下次遍历需要的指针
             if (reverse)
                 zzlPrev(zl,&eptr,&sptr);
             else
@@ -2509,6 +2516,7 @@ void zrangeGenericCommand(client *c, int reverse) {
             if (withscores && c->resp > 2) addReplyArrayLen(c,2);
             addReplyBulkCBuffer(c,ele,sdslen(ele));
             if (withscores) addReplyDouble(c,ln->score);
+            // reverse == True 往左查,否则就还往右走
             ln = reverse ? ln->backward : ln->level[0].forward;
         }
     } else {
