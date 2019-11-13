@@ -410,6 +410,7 @@ void expireGenericCommand(client *c, long long basetime, int unit) {
     if (getLongLongFromObjectOrReply(c, param, &when, NULL) != C_OK)
         return;
 
+    // expire key seconds 第三个参数一直是整数型，但是Redis默认对basetime使用milliseconds格式，因此这个终结点所在的时间戳是一个milliseconds。
     if (unit == UNIT_SECONDS) when *= 1000;
     when += basetime;
 
