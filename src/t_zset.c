@@ -1454,6 +1454,7 @@ int zsetDel(robj *zobj, sds ele) {
             return 1;
         }
     } else {
+        // 中午测试了下debug 命令的一个子命令 模拟调用serverPanic是真的会让服务器挂掉的，这个属于严重错误。
         serverPanic("Unknown sorted set encoding");
     }
     return 0; /* No such element found. */
@@ -1670,6 +1671,7 @@ void zremCommand(client *c) {
         checkType(c,zobj,OBJ_ZSET)) return;
 
     for (j = 2; j < c->argc; j++) {
+        // 为什么用zsetDel而不是在这里就区分OBJ_ENCODING_X呢？真的是要学习的地方诶，在确定的地方将内容重构为小单元，上层仅仅用于控制
         if (zsetDel(zobj,c->argv[j]->ptr)) deleted++;
         if (zsetLength(zobj) == 0) {
             dbDelete(c->db,key);
