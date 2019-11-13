@@ -294,6 +294,7 @@ void mgetCommand(client *c) {
             if (o->type != OBJ_STRING) {
                 addReplyNull(c);
             } else {
+                // 逐步刷出到client的buffer中进行输出
                 addReplyBulk(c,o);
             }
         }
