@@ -490,6 +490,7 @@ void ttlGenericCommand(client *c, int output_ms) {
     if (ttl == -1) {
         addReplyLongLong(c,-1);
     } else {
+        // ttl 对外输出second格式
         addReplyLongLong(c,output_ms ? ttl : ((ttl+500)/1000));
     }
 }
