@@ -3092,6 +3092,7 @@ void zscoreCommand(client *c) {
     if ((zobj = lookupKeyReadOrReply(c,key,shared.null[c->resp])) == NULL ||
         checkType(c,zobj,OBJ_ZSET)) return;
 
+    // zsetScore 对encoding为OBJ_ENCODING_SKIPLIST的如果没找到返回了C_ERR 这个定义总觉得稍微有点以偏概全，要是能有更精确的表述代码的可毒性会更好吧
     if (zsetScore(zobj,c->argv[2]->ptr,&score) == C_ERR) {
         addReplyNull(c);
     } else {
