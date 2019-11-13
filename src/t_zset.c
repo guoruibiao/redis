@@ -1348,6 +1348,7 @@ int zsetAdd(robj *zobj, double score, sds ele, int *flags, double *newscore) {
 
             /* Remove and re-insert when score changed. */
             if (score != curscore) {
+                // encoding为ziplist结构的sortedset 对新元素的添加更新需要进行先删后添的处理
                 zobj->ptr = zzlDelete(zobj->ptr,eptr);
                 zobj->ptr = zzlInsert(zobj->ptr,ele,score);
                 *flags |= ZADD_UPDATED;
@@ -1620,6 +1621,7 @@ void zaddGenericCommand(client *c, int flags) {
         int retflags = flags;
 
         ele = c->argv[scoreidx+1+j*2]->ptr;
+        // 外部检查完毕，将score和member添加进key中
         int retval = zsetAdd(zobj, score, ele, &retflags, &newscore);
         if (retval == 0) {
             addReplyError(c,nanerr);
