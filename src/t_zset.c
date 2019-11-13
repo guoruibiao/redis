@@ -2651,6 +2651,7 @@ void genericZrangebyscoreCommand(client *c, int reverse) {
             if (withscores) addReplyDouble(c,score);
 
             /* Move to next node */
+            // 比较重要！！！遍历指针修改
             if (reverse) {
                 zzlPrev(zl,&eptr,&sptr);
             } else {
@@ -2704,6 +2705,7 @@ void genericZrangebyscoreCommand(client *c, int reverse) {
             if (withscores) addReplyDouble(c,ln->score);
 
             /* Move to next node */
+            // ln = reverse ? ln->backward : ln->level[0].forward;
             if (reverse) {
                 ln = ln->backward;
             } else {
