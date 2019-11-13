@@ -74,6 +74,8 @@ void queueMultiCommand(client *c) {
 void discardTransaction(client *c) {
     freeClientMultiState(c);
     initClientMultiState(c);
+
+    // 不能忘记 **清空** client被置为CLIENT_MULTI的状态。
     c->flags &= ~(CLIENT_MULTI|CLIENT_DIRTY_CAS|CLIENT_DIRTY_EXEC);
     unwatchAllKeys(c);
 }
@@ -86,10 +88,13 @@ void flagTransaction(client *c) {
 }
 
 void multiCommand(client *c) {
+    // multi本身不可以被重复嵌套使用
     if (c->flags & CLIENT_MULTI) {
         addReplyError(c,"MULTI calls can not be nested");
         return;
     }
+
+    // 当前client状态修改
     c->flags |= CLIENT_MULTI;
     addReply(c,shared.ok);
 }
