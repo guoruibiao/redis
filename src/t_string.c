@@ -174,8 +174,11 @@ void getCommand(client *c) {
 }
 
 void getsetCommand(client *c) {
+    // getCommand --> client output buffer
     if (getGenericCommand(c) == C_ERR) return;
     c->argv[2] = tryObjectEncoding(c->argv[2]);
+
+    // set key newvalue
     setKey(c->db,c->argv[1],c->argv[2]);
     notifyKeyspaceEvent(NOTIFY_STRING,"set",c->argv[1],c->db->id);
     server.dirty++;
